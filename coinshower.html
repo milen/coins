@@ -50,6 +50,8 @@ https://gsap.com/docs/v3/
     const launchVelocityY = -500; // Negative Y moves upward.
     const gravity = 900; // Gravity increases downward speed each second.
     let velocityY = launchVelocityY;
+    const spinSpeed = Math.PI * 3; // Radians per second: 1.5 full turns.
+    let spinAngle = 0;
 
     function coinShowerTick(ticker) {
         const deltaSeconds = ticker.deltaMS / 1000;
@@ -57,6 +59,15 @@ https://gsap.com/docs/v3/
         // Move the coin, then let gravity change its velocity.
         coin.y += velocityY * deltaSeconds;
         velocityY += gravity * deltaSeconds;
+
+        // A rotating disc looks narrower as it turns away from us.
+        spinAngle = (spinAngle + spinSpeed * deltaSeconds) % (Math.PI * 2);
+        const faceWidth = Math.abs(Math.cos(spinAngle));
+        coin.scale.x = 0.08 + 0.92 * faceWidth; // Keep a thin visible edge.
+
+        // Darken the texture near the edge to suggest changing light.
+        const brightness = Math.round(160 + 95 * faceWidth);
+        coin.tint = (brightness << 16) | (brightness << 8) | brightness;
 
         // Launch again once the whole coin has fallen below the screen.
         if (coin.y - coin.height / 2 > app.screen.height) {
